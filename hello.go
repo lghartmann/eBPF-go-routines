@@ -24,11 +24,23 @@ func main() {
 	_, err = p.AttachKprobe("__x64_sys_execve")
 	must(err)
 
+	eventStream := make(chan []byte, 300)
+
+	pb, err := b.InitPerfBuf("info", eventStream, nil, 1024)
+	must(err)
+	pb.Start()
+
+	go func() {
+		for e := range eventStream {
+			fmt.Printf("Got value: %v\r\n", string(e))
+		}
+	}()
+
 	fmt.Println("kprobe attached; streaming trace_pipe...")
 	go tailTracePipe()
 	waitForSignal()
-
 	fmt.Println("Cleaning up")
+	pb.Stop()
 }
 
 func must(err error) {
