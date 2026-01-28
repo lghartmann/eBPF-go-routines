@@ -13,6 +13,8 @@
       "name": "linux-clang-bpf",
       "includePath": [
         "${workspaceFolder}/**",
+        "${workspaceFolder}/bpf",
+        "${workspaceFolder}/bpf/headers",
         "/usr/include",
         "/usr/include/x86_64-linux-gnu",
         "/usr/include/bpf"

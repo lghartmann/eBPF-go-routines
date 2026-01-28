@@ -1,24 +1,24 @@
-TARGET := hello
+TARGET := main
+ATTACH := attach
 TARGET_BPF := $(TARGET).bpf.o
 
-GO_SRC := *.go
 BPF_SRC := bpf/*.bpf.c
-
 LIBBPF_HEADERS := /usr/include/bpf
-LIBBPF_OBJ := /usr/lib/x86_64-linux-gnu/libbpf.a
 
 .PHONY: all
-all: $(TARGET) $(TARGET_BPF)
+all: $(TARGET) $(TARGET_BPF) $(ATTACH)
 
-go_env := CC=clang CGO_CFLAGS="-I $(LIBBPF_HEADERS)" CGO_LDFLAGS="$(LIBBPF_OBJ)"
-$(TARGET): $(GO_SRC) $(TARGET_BPF)
-	$(go_env) go build -o $(TARGET)
+$(TARGET): main.go
+	go build -o $(TARGET)
+
+$(ATTACH): cmd/attach/main.go
+	go build -o $(ATTACH) ./cmd/attach
 
 $(TARGET_BPF): $(BPF_SRC)
-	clang -I $(LIBBPF_HEADERS) -I /usr/include/x86_64-linux-gnu \
+	clang -I $(LIBBPF_HEADERS) -I /usr/include/x86_64-linux-gnu -I ./bpf -I ./bpf/headers \
 	-O2 -g -c -target bpf \
 	-o $@ $<
 
 .PHONY: clean
 clean:
-	go clean
+	rm -f $(TARGET) $(ATTACH) $(TARGET_BPF)
